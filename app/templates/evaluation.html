@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluation | Retail Demand Forecasting{% endblock %}
+{% block page_title %}Model Validation Reporting{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+
+    <!-- Description Header -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-1">
+        <h3 class="text-lg font-bold text-white">Validation Performance Analysis</h3>
+        <p class="text-sm text-slate-400">Comparing the baseline Linear Regression model against the production Random Forest model on out-of-sample chronological test split (Aug 1 - Aug 15, 2017).</p>
+    </div>
+
+    <!-- Models Comparison Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Model Card 1: Linear Regression -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">Baseline Model</span>
+                    <h4 class="text-xl font-bold text-white mt-2">Linear Regression</h4>
+                    <p class="text-xs text-slate-500">Standard ordinary least squares regression</p>
+                </div>
+                <div class="p-3 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 border-t border-slate-800/60 pt-4">
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Val MAE</span>
+                    <span class="text-2xl font-bold text-slate-300 font-mono">436.05</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Val RMSE</span>
+                    <span class="text-2xl font-bold text-slate-300 font-mono">1,021.14</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Train MAE</span>
+                    <span class="text-sm font-semibold text-slate-400 font-mono">449.39</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Train RMSE</span>
+                    <span class="text-sm font-semibold text-slate-400 font-mono">1,087.09</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Card 2: Random Forest -->
+        <div class="bg-slate-900 border border-brand-500/30 p-6 rounded-2xl shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition-all duration-300 ring-1 ring-brand-500/10">
+            <!-- Best Model Badge -->
+            <div class="absolute top-0 right-0 bg-brand-600 text-white text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl shadow-md flex items-center space-x-1">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Active Model</span>
+            </div>
+            
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-600/10 text-brand-400 border border-brand-500/10">Production Model</span>
+                    <h4 class="text-xl font-bold text-white mt-2">Random Forest Regressor</h4>
+                    <p class="text-xs text-slate-500">Ensemble of 50 depth-limited decision trees</p>
+                </div>
+                <div class="p-3 bg-brand-600/10 text-brand-400 border border-brand-500/10 rounded-xl">
+                    <i class="fa-solid fa-tree text-lg"></i>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 border-t border-slate-800/60 pt-4">
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Val MAE</span>
+                    <span class="text-2xl font-bold text-brand-400 font-mono">85.56</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Val RMSE</span>
+                    <span class="text-2xl font-bold text-brand-400 font-mono">281.09</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Train MAE</span>
+                    <span class="text-sm font-semibold text-slate-400 font-mono">67.42</span>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Train RMSE</span>
+                    <span class="text-sm font-semibold text-slate-400 font-mono">285.02</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts comparison grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- RMSE Chart -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <h4 class="text-sm font-semibold text-slate-200 mb-4">RMSE Comparison (Lower is Better)</h4>
+            <div class="h-64">
+                <canvas id="rmseChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- MAE Chart -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <h4 class="text-sm font-semibold text-slate-200 mb-4">MAE Comparison (Lower is Better)</h4>
+            <div class="h-64">
+                <canvas id="maeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explanatory note -->
+    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-3">
+        <h4 class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-question text-brand-400"></i>
+            <span>Why is Random Forest performing so much better?</span>
+        </h4>
+        <div class="text-xs text-slate-400 space-y-2 leading-relaxed">
+            <p>
+                1. **Non-Linear Relationships**: Retail demand sales values exhibit non-linear interactions. For example, promotion effects (`onpromotion`) can vary highly depending on the product category (`family`). A linear regression struggles with these multiplicative relationships without complex manual feature interactions.
+            </p>
+            <p>
+                2. **Categorical Store-Family Dynamics**: With 54 stores and 33 product categories, there are $54 \times 33 = 1,782$ distinct store-family configurations. The Random Forest easily splits these variables and learns localized tree splits for specific stores and product combinations, whereas linear models treat them as additive parameters.
+            </p>
+            <p>
+                3. **Zero-Sales Boundaries**: Retail sales are naturally bounded at 0 (a store cannot sell a negative number of units). Linear Regression frequently yields negative predictions which we must manually clip, introducing error. Decision tree models naturally restrict predictions to the range of training labels, preventing structural prediction errors.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Comparison Charts Initialization -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Shared chart config helper
+        function createBarChart(canvasId, labels, lrVal, rfVal, labelTitle, activeColor) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Linear Regression (Baseline)',
+                            data: [lrVal],
+                            backgroundColor: '#475569', // slate-600
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Random Forest (Production)',
+                            data: [rfVal],
+                            backgroundColor: activeColor,
+                            borderColor: 'transparent',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            cornerRadius: 6
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { display: false }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(51, 65, 85, 0.15)',
+                                borderColor: 'transparent'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize RMSE Chart
+        createBarChart('rmseChart', ['Val RMSE'], 1021.1394, 281.0901, 'RMSE', '#0e94e9', 'rgba(14, 148, 233, 0.8)');
+        
+        // Initialize MAE Chart
+        createBarChart('maeChart', ['Val MAE'], 436.0541, 85.5618, 'MAE', '#10b981', 'rgba(16, 185, 129, 0.8)');
+    });
+</script>
+{% endblock %}

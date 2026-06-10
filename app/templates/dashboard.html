@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Retail Demand Forecasting{% endblock %}
+{% block page_title %}Manager Demand Forecasting Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+
+    <!-- KPI Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Metric Card 1: Total Sales Forecast -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+            <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                <i class="fa-solid fa-cart-shopping text-9xl text-slate-100"></i>
+            </div>
+            <div class="flex justify-between items-start">
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Sales Forecast</p>
+                    <h3 class="text-3xl font-extrabold text-white tracking-tight">{{ "{:,.0f}".format(total_sales) }}</h3>
+                    <p class="text-[10px] text-brand-400 font-medium">For the next 16-day period</p>
+                </div>
+                <div class="p-3 bg-brand-600/10 text-brand-400 border border-brand-500/10 rounded-xl">
+                    <i class="fa-solid fa-cart-shopping text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Card 2: Highest Store -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+            <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                <i class="fa-solid fa-store text-9xl text-slate-100"></i>
+            </div>
+            <div class="flex justify-between items-start">
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Store Location</p>
+                    <h3 class="text-3xl font-extrabold text-white tracking-tight">Store {{ top_store.store_nbr }}</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">{{ top_store.city_name }} ({{ "{:,.0f}".format(top_store.sales) }} units)</p>
+                </div>
+                <div class="p-3 bg-indigo-600/10 text-indigo-400 border border-indigo-500/10 rounded-xl">
+                    <i class="fa-solid fa-store text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Card 3: Top Category -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+            <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                <i class="fa-solid fa-boxes-stacked text-9xl text-slate-100"></i>
+            </div>
+            <div class="flex justify-between items-start">
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Demand Category</p>
+                    <h3 class="text-xl font-extrabold text-white tracking-tight truncate max-w-[170px]" title="{{ top_category.family_name }}">
+                        {{ top_category.family_name }}
+                    </h3>
+                    <p class="text-[10px] text-slate-400 font-medium">{{ "{:,.0f}".format(top_category.sales) }} units projected</p>
+                </div>
+                <div class="p-3 bg-emerald-600/10 text-emerald-400 border border-emerald-500/10 rounded-xl">
+                    <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Card 4: Forecast Window -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+            <div class="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                <i class="fa-solid fa-calendar-days text-9xl text-slate-100"></i>
+            </div>
+            <div class="flex justify-between items-start">
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Forecast Period</p>
+                    <h3 class="text-lg font-bold text-white tracking-tight pt-1">16 Aug - 31 Aug</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">Year 2017 (Competition Test Set)</p>
+                </div>
+                <div class="p-3 bg-amber-600/10 text-amber-400 border border-amber-500/10 rounded-xl">
+                    <i class="fa-solid fa-calendar-days text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Block -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h4 class="text-sm font-semibold text-slate-200">Daily Demand Forecasting Trend</h4>
+                <p class="text-xs text-slate-500">Projected aggregate units sold per day</p>
+            </div>
+            <span class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-brand-400 font-medium">
+                Line Chart Trend
+            </span>
+        </div>
+        <div class="h-80 w-full">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Grids of top listings -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Top 5 Categories Table -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col">
+            <div class="mb-4">
+                <h4 class="text-sm font-semibold text-slate-200">Top 5 Product Families by Forecasted Demand</h4>
+                <p class="text-xs text-slate-500">Categories with highest projected restock requirements</p>
+            </div>
+            <div class="flex-1 overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-300">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-950/40 border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3">Category</th>
+                            <th class="px-4 py-3 text-right">Projected Sales</th>
+                            <th class="px-4 py-3 text-right">Share (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for cat in top_5_categories %}
+                        <tr class="hover:bg-slate-800/30 transition-colors duration-150">
+                            <td class="px-4 py-3.5 font-medium text-white">{{ cat.name }}</td>
+                            <td class="px-4 py-3.5 text-right font-mono text-slate-200">{{ "{:,.0f}".format(cat.sales) }}</td>
+                            <td class="px-4 py-3.5 text-right font-mono text-brand-400">{{ "{:.1f}%".format(cat.share) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top 5 Store sales -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col">
+            <div class="mb-4">
+                <h4 class="text-sm font-semibold text-slate-200">Top 5 Store Locations by Forecasted Demand</h4>
+                <p class="text-xs text-slate-500">Retail branches requiring highest inventory volume</p>
+            </div>
+            <div class="flex-1 overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-300">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-950/40 border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3">Store Number</th>
+                            <th class="px-4 py-3">City & State</th>
+                            <th class="px-4 py-3 text-right">Projected Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for store in top_5_stores %}
+                        <tr class="hover:bg-slate-800/30 transition-colors duration-150">
+                            <td class="px-4 py-3.5 font-medium text-white flex items-center space-x-2">
+                                <span class="w-5 h-5 rounded bg-brand-500/10 text-brand-400 flex items-center justify-center text-xs font-semibold">
+                                    {{ store.store_nbr }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3.5 text-slate-400">{{ store.city }}, {{ store.state }}</td>
+                            <td class="px-4 py-3.5 text-right font-mono text-slate-200">{{ "{:,.0f}".format(store.sales) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart initialization script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        
+        // Data populated from Jinja2 context variables
+        const chartLabels = {{ chart_labels | tojson }};
+        const chartData = {{ chart_data | tojson }};
+
+        // Custom gradient for modern fill look
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(14, 148, 233, 0.35)'); // brand-500 with opacity
+        gradient.addColorStop(1, 'rgba(14, 148, 233, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Projected Daily Demand',
+                    data: chartData,
+                    borderColor: '#0e94e9', // brand-500
+                    borderWidth: 3,
+                    pointBackgroundColor: '#0e94e9',
+                    pointBorderColor: '#020617',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Sales: ${context.parsed.y.toLocaleString()} units`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(51, 65, 85, 0.2)',
+                            borderColor: 'transparent'
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(51, 65, 85, 0.2)',
+                            borderColor: 'transparent'
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data directories (contains large raw and processed datasets)
+data/
+
+# Model checkpoints and serialized models
+*.pkl
+*.joblib
+
+# OS generated files
+.DS_Store
+Thumbs.db

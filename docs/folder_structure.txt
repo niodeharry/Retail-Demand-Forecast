@@ -1,0 +1,17 @@
+retail-demand-forecast/
+├── data/
+│   ├── raw/                 # Tempatkan train.csv, oil.csv, holidays_events.csv di sini
+│   └── processed/           # Output data yang sudah dibersihkan
+├── docs/
+│   ├── project_context.md
+│   ├── coding_guidelines.md
+│   └── feature_specs.md
+├── src/
+│   ├── features/            # Skrip pemrosesan data (menggabungkan exogenous variables)
+│   └── models/              # Skrip pelatihan dan evaluasi model (menyimpan .pkl)
+├── app/
+│   ├── main.py              # Logika perutean (FastAPI backend)
+│   ├── templates/           # File HTML dengan Jinja2
+│   └── static/              # Asset tambahan jika ada
+├── .gitignore
+└── requirements.txt
